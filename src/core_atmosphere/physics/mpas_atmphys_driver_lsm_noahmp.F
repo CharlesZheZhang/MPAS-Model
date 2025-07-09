@@ -19,6 +19,7 @@
 
  use NoahmpIOVarType
  use NoahmpDriverMainMod,only: NoahmpDriverMain
+ use GroundWaterMmfMod
 
  implicit none
  private
@@ -1068,7 +1069,11 @@
  type(mpas_pool_type),intent(inout):: diag_physics_noahmp
  type(mpas_pool_type),intent(inout):: output_noahmp
  type(mpas_pool_type),intent(inout):: sfc_input
+
+!--- local variables and arrays:
+ character(len=StrKIND),pointer:: groundwater_scheme 
  
+ call mpas_pool_get_config(configs,'config_noahmp_iopt_runsub',groundwater_scheme)
 
 !-----------------------------------------------------------------------------------------------------------------
 !call mpas_log_write(' ')
@@ -1078,6 +1083,13 @@
                           state,time_lev,itimestep)
 
  call NoahmpDriverMain(mpas_noahmp)
+
+ if ( groundwater_scheme .eq. 5 ) then 
+    if ( MOD(itimestep,STEPWTD) .EQ. 0 ) THEN! STEPWTD always and only non-zero for iopt_run == 5
+         call mpas_log_write('calling WTABLE')
+         call WTABLE_mmf_noahmp(mpas_noahmp)
+    endif
+ endif
 
  call lsm_noahmp_toMPAS(diag_physics,diag_physics_noahmp,output_noahmp,sfc_input)
 

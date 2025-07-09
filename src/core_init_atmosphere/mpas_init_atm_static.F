@@ -1248,6 +1248,46 @@
                              supersample_fac=supersample_fac_30s)
     call mpas_log_write('--- end interpolate SOILCL4')
 
+    !
+    ! Interpolate FDEPTH
+    !
+    geog_sub_path = 'groundwater/f/'
+
+    call mpas_log_write('--- start interpolate FDEPTH')
+    call interp_soil_texture('fdepth', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                             supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate FDEPTH')
+
+    !
+    ! Interpolate EQZWT
+    !
+    geog_sub_path = 'groundwater/wtd/'
+
+    call mpas_log_write('--- start interpolate EQZWT')
+    call interp_soil_texture('eqzwt', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                             supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate EQZWT')
+
+    !
+    ! Interpolate RECHCLIM 
+    !
+    geog_sub_path = 'groundwater/recharge/'
+
+    call mpas_log_write('--- start interpolate RECHCLIM')
+    call interp_soil_texture('rechclim', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                             supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate RECHCLIM')
+
+    !
+    ! Interpolate RIVERBED
+    !
+    geog_sub_path = 'groundwater/riverbed/'
+
+    call mpas_log_write('--- start interpolate RIVERBED')
+    call interp_soil_texture('riverbed', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                             supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate RIVERBED')
+
  end if
 
 !
