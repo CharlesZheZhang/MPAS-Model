@@ -304,8 +304,8 @@
 
  call mpas_pool_get_config(configs, 'config_nsoillevels', config_nsoillevels)
 
- if(config_nsoillevels .ne. 4) &
-    call physics_error_fatal('NOAH lsm uses 4 soil layers. Correct config_nsoillevels.')
+ !if(config_nsoillevels .ne. 4) &
+ !   call physics_error_fatal('NOAH lsm uses 4 soil layers. Correct config_nsoillevels.')
 
  do iCell = 1, nCellsSolve
     iSoil = 1
@@ -318,10 +318,16 @@
  enddo
 
  do iCell = 1, nCellsSolve
-    dzs(1,iCell) = 0.10_RKIND
-    dzs(2,iCell) = 0.30_RKIND
-    dzs(3,iCell) = 0.60_RKIND
-    dzs(4,iCell) = 1.00_RKIND
+    dzs(1,iCell)  = 0.05_RKIND
+    dzs(2,iCell)  = 0.10_RKIND
+    dzs(3,iCell)  = 0.10_RKIND
+    dzs(4,iCell)  = 0.10_RKIND
+    dzs(5,iCell)  = 0.30_RKIND
+    dzs(6,iCell)  = 0.35_RKIND
+    dzs(7,iCell)  = 0.50_RKIND
+    dzs(8,iCell)  = 1.00_RKIND
+    dzs(9,iCell)  = 1.00_RKIND
+    dzs(10,iCell) = 1.50_RKIND
 
     iSoil = 1
     zs(iSoil,iCell)  = 0.5_RKIND * dzs(iSoil,iCell)
@@ -409,8 +415,8 @@
     call mpas_log_write('Error in interpolation of sm_fg to MPAS grid: num_sm = $i', messageType=MPAS_LOG_CRIT, intArgs=(/num_sm/))
  endif 
 
- if(config_nsoillevels .ne. 4) &
-    call physics_error_fatal('NOAH lsm uses 4 soil layers. Correct config_nsoillevels.')
+ !if(config_nsoillevels .ne. 4) &
+ !   call physics_error_fatal('NOAH lsm uses 4 soil layers. Correct config_nsoillevels.')
 
  if(.not.allocated(zhave)   ) allocate(zhave(nFGSoilLevels+2,nCellsSolve)   )
  if(.not.allocated(st_input)) allocate(st_input(nFGSoilLevels+2,nCellsSolve))
@@ -429,7 +435,8 @@
        sm_input(ifgSoil+1,iCell) = sm_fg(ifgSoil,iCell)
     enddo
 
-    zhave(nFGSoilLevels+2,iCell) = 300._RKIND/100._RKIND
+    ! Change this line from 300 to 600:
+    zhave(nFGSoilLevels+2,iCell) = 600._RKIND/100._RKIND
     st_input(nFGSoilLevels+2,iCell) = tmn(iCell)
     sm_input(nFGSoilLevels+2,iCell) = sm_input(nFGSoilLevels,iCell)
 
