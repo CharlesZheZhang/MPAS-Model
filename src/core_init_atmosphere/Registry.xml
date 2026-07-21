@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<registry model="mpas" core="init_atmosphere" core_abbrev="init_atm" version="8.4.0">
+<registry model="mpas" core="init_atmosphere" core_abbrev="init_atm" version="8.4.1">
 
 <!-- **************************************************************************************** -->
 <!-- ************************************** Dimensions ************************************** -->
@@ -464,6 +464,10 @@
                         <var name="soilcl2" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
                         <var name="soilcl3" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
                         <var name="soilcl4" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
+                        <var name="fdepth" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
+                        <var name="rechclim" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
+                        <var name="eqzwt" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
+                        <var name="riverbed" packages="gwd_stage_in;vertical_stage_in;met_stage_in"/>
                         <var name="var2d" packages="vertical_stage_in;met_stage_in"/>
                         <var name="con" packages="vertical_stage_in;met_stage_in"/>
                         <var name="oa1" packages="vertical_stage_in;met_stage_in"/>
@@ -567,6 +571,10 @@
                         <var name="soilcl2"/>
                         <var name="soilcl3"/>
                         <var name="soilcl4"/>
+                        <var name="fdepth"/>
+                        <var name="rechclim"/>
+                        <var name="eqzwt"/>
+                        <var name="riverbed"/>
                         <var name="var2d" packages="gwd_stage_out;vertical_stage_out;met_stage_out"/>
                         <var name="con" packages="gwd_stage_out;vertical_stage_out;met_stage_out"/>
                         <var name="oa1" packages="gwd_stage_out;vertical_stage_out;met_stage_out"/>
@@ -897,6 +905,23 @@
 
                 <var name="soilcl4" type="real" dimensions="nCells" units="unitless"
                      description="soil texture class level 4 needed as input for the NOAH-MP land surface model"
+                     packages="noahmp"/>
+
+                <!-- MMF groundwater fields needed for the NOAH-MP MMF groundwater scheme -->
+                <var name="fdepth" type="real" dimensions="nCells" units="m"
+                     description="e-folding depth of transmissivity needed as input for the NOAH-MP MMF groundwater scheme"
+                     packages="noahmp"/>
+
+                <var name="rechclim" type="real" dimensions="nCells" units="mm"
+                     description="climatological groundwater recharge needed as input for the NOAH-MP MMF groundwater scheme"
+                     packages="noahmp"/>
+
+                <var name="eqzwt" type="real" dimensions="nCells" units="m"
+                     description="equilibrium water table depth needed as input for the NOAH-MP MMF groundwater scheme"
+                     packages="noahmp"/>
+
+                <var name="riverbed" type="real" dimensions="nCells" units="m"
+                     description="riverbed elevation needed as input for the NOAH-MP MMF groundwater scheme"
                      packages="noahmp"/>
 
                 <!-- GWDO fields -->

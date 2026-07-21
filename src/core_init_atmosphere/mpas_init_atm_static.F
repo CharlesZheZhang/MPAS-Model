@@ -91,6 +91,8 @@
  integer (kind=I8KIND), dimension(:), pointer :: ter_integer
  integer (kind=I8KIND), dimension(:,:), pointer :: soilcomp_int
  real (kind=RKIND) :: soilcomp_msgval = 255.0_RKIND   ! Modified later based on index file for soilcomp
+ integer (kind=I8KIND), dimension(:), pointer :: mmf_integer
+ real (kind=RKIND) :: mmf_msgval = -99999.0_RKIND     ! Modified later based on index file for each MMF groundwater field
  integer, dimension(:), pointer :: lu_index
  integer, dimension(:), pointer :: soilcat_top
  integer, dimension(:), pointer :: nhs
@@ -1248,6 +1250,46 @@
                              supersample_fac=supersample_fac_30s)
     call mpas_log_write('--- end interpolate SOILCL4')
 
+    !
+    ! Interpolate FDEPTH (e-folding depth of transmissivity, MMF groundwater scheme)
+    !
+    geog_sub_path = 'groundwater/f/'
+
+    call mpas_log_write('--- start interpolate FDEPTH')
+    call interp_mmf_gw('fdepth', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                       fillval=100.0_RKIND, supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate FDEPTH')
+
+    !
+    ! Interpolate RECHCLIM (climatological groundwater recharge, MMF groundwater scheme)
+    !
+    geog_sub_path = 'groundwater/recharge/'
+
+    call mpas_log_write('--- start interpolate RECHCLIM')
+    call interp_mmf_gw('rechclim', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                       fillval=-1.0_RKIND, supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate RECHCLIM')
+
+    !
+    ! Interpolate EQZWT (equilibrium water table depth, MMF groundwater scheme)
+    !
+    geog_sub_path = 'groundwater/wtd/'
+
+    call mpas_log_write('--- start interpolate EQZWT')
+    call interp_mmf_gw('eqzwt', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                       fillval=0.0_RKIND, supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate EQZWT')
+
+    !
+    ! Interpolate RIVERBED (riverbed elevation, MMF groundwater scheme)
+    !
+    geog_sub_path = 'groundwater/riverbed/'
+
+    call mpas_log_write('--- start interpolate RIVERBED')
+    call interp_mmf_gw('riverbed', mesh, tree, trim(geog_data_path)//trim(geog_sub_path), &
+                       fillval=0.0_RKIND, supersample_fac=supersample_fac_30s)
+    call mpas_log_write('--- end interpolate RIVERBED')
+
  end if
 
 !
@@ -2180,6 +2222,167 @@
      nullify(category_max)
 
  end subroutine interp_soil_texture
+
+
+ !***********************************************************************
+ !
+ !  routine mmf_gw_interp_accumulation
+ !
+ !> \brief  Accumulate MMF groundwater dataset values
+ !> \details
+ !> This routine accumulates pixel values for the continuous, water-masked
+ !> MMF groundwater fields (fdepth, rechclim, eqzwt, riverbed) for the
+ !> init_atm_map_static_data routine. Pixels are only accumulated for land
+ !> cells (landmask == 1), and pixels equal to the dataset's missing value
+ !> are ignored, mirroring the 'masked = water' treatment of these fields
+ !> in WPS's GEOGRID.TBL.ARW.noahmp.
+ !
+ !-----------------------------------------------------------------------
+ subroutine mmf_gw_interp_accumulation(iCell, pixel)
+
+     integer, intent(in) :: iCell
+     integer (kind=I8KIND), dimension(:), intent(in) :: pixel
+
+     if (landmask(iCell) == 0) return
+
+     ! Since values in pixel are not yet scaled, we can compare them to mmf_msgval,
+     ! which also is not scaled, without scaling either value. The comparison is
+     ! done in real space to avoid an undefined integer conversion should a
+     ! dataset ever use a missing value outside the range of I8KIND
+     if (real(pixel(1), kind=RKIND) /= mmf_msgval) then
+         mmf_integer(iCell) = mmf_integer(iCell) + pixel(1)
+         nhs(iCell) = nhs(iCell) + 1
+     end if
+
+ end subroutine mmf_gw_interp_accumulation
+
+
+ !***********************************************************************
+ !
+ !  routine interp_mmf_gw
+ !
+ !> \brief   Interpolate a continuous, water-masked MMF groundwater field
+ !> \details
+ !> Interpolate one of the static fields required by the Noah-MP MMF
+ !> groundwater scheme (fdepth, rechclim, eqzwt, riverbed) by using the
+ !> init_atm_map_static_data routine and accumulating pixel values into
+ !> cells using mmf_gw_interp_accumulation. fieldname should be the name
+ !> of a real, nCells-dimensioned field in the mesh pool, and geog_data_path
+ !> should be the full path to the corresponding geogrid dataset directory
+ !> (containing an 'index' file). Water cells, and land cells that receive
+ !> no valid source pixels, are assigned fillval, which should match the
+ !> 'fill_missing' value used for the field in WPS's GEOGRID.TBL.ARW.noahmp
+ !> so that the downstream MMF initialization sees the same sentinel
+ !> values it would in WRF.
+ !
+ !-----------------------------------------------------------------------
+ subroutine interp_mmf_gw(fieldname, mesh, kdtree, geog_data_path, fillval, supersample_fac)
+
+    implicit none
+
+    ! Input variables
+    character (len=*), intent(in) :: fieldname
+    type (mpas_pool_type), intent(inout) :: mesh
+    type (mpas_kd_type), pointer, intent(in) :: kdtree
+    character (len=*), intent(in) :: geog_data_path
+    real (kind=RKIND), intent(in) :: fillval
+    integer, intent(in), optional :: supersample_fac
+
+    ! Local variables
+    type (mpas_geotile_mgr_type) :: mgr
+    integer, pointer :: nCells
+    real (kind=RKIND), pointer :: scalefactor
+    real (kind=RKIND), pointer :: missing_value
+
+    real (kind=RKIND), dimension(:), pointer :: field
+
+    integer :: iCell
+    integer :: ierr
+
+    ierr = mgr % init(trim(geog_data_path))
+    if (ierr /= 0) then
+        call mpas_log_write('Error occurred initializing interpolation for '//trim(geog_data_path), &
+                            messageType=MPAS_LOG_CRIT)
+
+        return ! Program execution should not reach this statement
+               ! since the preceding message is a critical error
+    end if
+
+    call mpas_pool_get_dimension(mesh, 'nCells', nCells)
+    call mpas_pool_get_array(mesh, trim(fieldname), field)
+    if (.not. associated(field)) then
+        call mpas_log_write("The field '"//trim(fieldname)//"' was not found in the mesh pool. Check that it was", &
+                            messageType=MPAS_LOG_ERR)
+        call mpas_log_write("added to the init_atmosphere Registry.xml within var_struct 'mesh' under an active package,", &
+                            messageType=MPAS_LOG_ERR)
+        call mpas_log_write("and that the model was rebuilt after the Registry was modified", &
+                            messageType=MPAS_LOG_CRIT)
+        return ! Program execution should not reach this statement
+               ! since the preceding message is a critical error
+    end if
+
+    call mpas_pool_get_config(mgr % pool, 'scale_factor', scalefactor)
+
+    !
+    ! The geotile manager provides a default for scale_factor when it is absent
+    ! from a dataset's index file, but not for missing_value, and pool errors
+    ! are silent by default; guard against an unassociated pointer here so that
+    ! a dataset without a missing_value entry is handled gracefully
+    !
+    missing_value => null()
+    call mpas_pool_get_config(mgr % pool, 'missing_value', missing_value)
+    if (associated(missing_value)) then
+        mmf_msgval = missing_value
+    else
+        call mpas_log_write('No missing_value found in the index file for '//trim(geog_data_path), &
+                            messageType=MPAS_LOG_WARN)
+        call mpas_log_write('All pixels of this dataset will be treated as valid', messageType=MPAS_LOG_WARN)
+        mmf_msgval = -1.0e30_RKIND
+    end if
+
+    allocate(mmf_integer(nCells))
+    allocate(nhs(nCells))
+
+    !
+    ! Store tile values as a I8KIND integer temporarily to avoid floating
+    ! point round off differences and to have +/- 9.22x10^18 range of representative
+    ! values.
+    !
+    field(:) = 0.0
+    mmf_integer(:) = 0
+    nhs(:) = 0
+
+    call init_atm_map_static_data(mesh, mgr, kdtree, continuous_interp_criteria, &
+                                  mmf_gw_interp_accumulation, &
+                                  supersample_fac=supersample_fac)
+
+    !
+    ! Water cells, and land cells with no valid source pixels, receive the same
+    ! fill value that geogrid would assign through 'fill_missing'
+    !
+    do iCell = 1, nCells
+       if (nhs(iCell) > 0) then
+           field(iCell) = real(real(mmf_integer(iCell), kind=R8KIND) &
+                               / real(nhs(iCell), kind=R8KIND), kind=RKIND)
+           field(iCell) = field(iCell) * scalefactor
+       else
+           field(iCell) = fillval
+       end if
+    end do
+
+    deallocate(mmf_integer)
+    deallocate(nhs)
+
+    ierr = mgr % finalize()
+    if (ierr /= 0) then
+        call mpas_log_write('Error occurred finalizing interpolation for '//trim(geog_data_path), &
+                            messageType=MPAS_LOG_CRIT)
+
+        return ! Program execution should not reach this statement
+               ! since the preceding message is a critical error
+    end if
+
+ end subroutine interp_mmf_gw
 
 !==================================================================================================
  subroutine init_atm_check_read_error(istatus, fname)
