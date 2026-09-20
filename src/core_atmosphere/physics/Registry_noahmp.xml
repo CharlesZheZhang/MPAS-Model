@@ -16,6 +16,9 @@
       <dim name="nCrops" definition="5"
                 description="The number of crop types as needed as input in the NOAH-MP land surface model"/>
 
+      <dim name="nRads" definition="2"
+                description="The number of shortwave band as needed as input in the NOAH-MP land surface model"/>
+
  </dims>
 
 
@@ -457,11 +460,11 @@
 
       <var name="acc_glaflwxy" type="real" dimensions="nCells Time" units="mm"
                 description="accumulated glacier excessive flow per soil timestep"/>
-
-      <var name="albsoildirxy" type="real" dimensions="nCells Time" units="-"
+      
+      <var name="albsoildirxy" type="real" dimensions="nRads nCells Time" units="-"
                 description="soil albedo under direct radiation"/>
 
-      <var name="albsoildifxy" type="real" dimensions="nCells Time" units="-"
+      <var name="albsoildifxy" type="real" dimensions="nRads nCells Time" units="-"
                 description="soil albedo under diffuse radiation"/>
 
       <var name="cropcat" type="integer" dimensions="nCells Time" units="-"

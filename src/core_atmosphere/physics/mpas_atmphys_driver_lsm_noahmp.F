@@ -325,7 +325,6 @@
  call mpas_pool_get_array(diag_physics_noahmp,'fastcpxy'    ,fastcpxy    )
  call mpas_pool_get_array(diag_physics_noahmp,'xsaixy'      ,xsaixy      )
  call mpas_pool_get_array(diag_physics_noahmp,'taussxy'     ,taussxy     )
- call mpas_pool_get_array(diag_physics_noahmp,'cropcat'     ,cropcat     )
  call mpas_pool_get_array(diag_physics_noahmp,'acc_dwaterxy',acc_dwaterxy)
  call mpas_pool_get_array(diag_physics_noahmp,'acc_prcpxy'  ,acc_prcpxy  )
  call mpas_pool_get_array(diag_physics_noahmp,'acc_ecanxy'  ,acc_ecanxy  )
