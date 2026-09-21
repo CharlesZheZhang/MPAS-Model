@@ -76,11 +76,11 @@
 
 !--- local INOUT pointers (with no Noah LSM equivalent as defined in WRF):
  integer,dimension(:),pointer:: isnowxy
- integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi
+ integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi, cropcat, pgsxy
  real(kind=RKIND),dimension(:),pointer:: tvxy,tgxy,canicexy,canliqxy,eahxy,tahxy,cmxy,chxy,fwetxy,sneqvoxy, &
                                          alboldxy,wslakexy,zwtxy,waxy,wtxy,                                 &
                                          lfmassxy,rtmassxy,stmassxy,woodxy,grainxy,gddxy,stblcpxy,          &
-                                         fastcpxy,xsaixy,taussxy,cropcat,qtdrain,pgsxy
+                                         fastcpxy,xsaixy,taussxy,qtdrain
  real(kind=RKIND),dimension(:,:),pointer:: tsnoxy,zsnsoxy,snicexy,snliqxy
  real(kind=RKIND),dimension(:),pointer:: irwatsi,irsivol,ireloss,irrsplh,irwatmi,irmivol,irwatfi,irfivol
  real(kind=RKIND),dimension(:),pointer:: smcwtdxy,deeprechxy,rechxy,qrfsxy,qspringsxy,qslatxy, &
@@ -817,11 +817,11 @@
 
  !--- local INOUT pointers (with no Noah LSM equivalent as defined in WRF):
  integer,dimension(:),pointer:: isnowxy
- integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi
+ integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi,pgsxy
  real(kind=RKIND),dimension(:),pointer:: tvxy,tgxy,canicexy,canliqxy,eahxy,tahxy,cmxy,chxy,fwetxy,sneqvoxy, &
                                          alboldxy,qsnowxy,qrainxy,wslakexy,zwtxy,waxy,wtxy,                 &
                                          lfmassxy,rtmassxy,stmassxy,woodxy,grainxy,gddxy,stblcpxy,          &
-                                         fastcpxy,xsaixy,taussxy,pgsxy
+                                         fastcpxy,xsaixy,taussxy
  real(kind=RKIND),dimension(:,:),pointer:: tsnoxy,zsnsoxy,snicexy,snliqxy
  real(kind=RKIND),dimension(:),pointer:: irwatsi,irsivol,ireloss,irrsplh,irwatmi,irmivol,irwatfi,irfivol
  real(kind=RKIND),dimension(:),pointer:: smcwtdxy,deeprechxy,rechxy,qrfsxy,qspringsxy,qslatxy, &

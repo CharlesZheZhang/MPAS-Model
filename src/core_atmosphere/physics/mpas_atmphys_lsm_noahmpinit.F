@@ -277,7 +277,7 @@
  integer,pointer:: ncrops
  integer,dimension(:),pointer:: isltyp,ivgtyp
  integer,dimension(:),pointer:: isnowxy
- integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi
+ integer,dimension(:),pointer:: irnumsi,irnummi,irnumfi,cropcat
  
  real(kind=RKIND)        :: dt
  real(kind=RKIND),pointer:: wtddt,stepwtd
@@ -293,7 +293,7 @@
  real(kind=RKIND),dimension(:),pointer:: fdepthxy,terrain,rechclim,eqzwt,riverbedxy
  real(kind=RKIND),dimension(:),pointer:: irfract,sifract,mifract,fifract
  real(kind=RKIND),dimension(:),pointer:: planting,harvest,season_gdd,td_fraction
- real(kind=RKIND),dimension(:),pointer:: cropcat,gddxy,grainxy,qtdrain
+ real(kind=RKIND),dimension(:),pointer:: gddxy,grainxy,qtdrain
  real(kind=RKIND),dimension(:),pointer:: smcwtdxy,deeprechxy,rechxy,qrfsxy,qspringsxy,qslatxy, &
                                          rivercondxy,pexpxy
  real(kind=RKIND),dimension(:),pointer:: fsatxy,wsurfxy
